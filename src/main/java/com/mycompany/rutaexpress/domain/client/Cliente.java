@@ -1,5 +1,7 @@
 package com.mycompany.rutaexpress.domain.client;
 
+import com.mycompany.rutaexpress.estructures.lists.List;
+import com.mycompany.rutaexpress.estructures.lists.Node;
 import java.time.LocalDate;
 
 public class Cliente {
@@ -11,6 +13,7 @@ public class Cliente {
     private String direccion;
     private String municipio;
     private LocalDate fechaRegistro;
+    private final List guias;
 
     public Cliente(String documento, String tipoCliente, String nombre,
             String telefono, String correo, String direccion, String municipio) {
@@ -22,6 +25,7 @@ public class Cliente {
         this.direccion = direccion;
         this.municipio = municipio;
         this.fechaRegistro = LocalDate.now();
+        this.guias = new List();
     }
 
     public String getDocumento() {
@@ -88,11 +92,26 @@ public class Cliente {
         this.fechaRegistro = fechaRegistro;
     }
 
+    public void agregarGuia(String guia) {
+        if (guia == null || guia.trim().isEmpty()) return;
+        Node actual = guias.getHead();
+        while (actual != null) {
+            if (guia.trim().equalsIgnoreCase((String) actual.getData())) return;
+            actual = actual.getLink();
+        }
+        guias.AddLast(guia.trim());
+    }
+
+    public List getGuias() {
+        return guias;
+    }
+
     @Override
     public String toString() {
         return "Documento: " + documento + " | Tipo: " + tipoCliente
                 + " | Nombre: " + nombre + " | Teléfono: " + telefono
                 + " | Correo: " + correo + " | Dirección: " + direccion
-                + " | Municipio: " + municipio + " | Registro: " + fechaRegistro;
+                + " | Municipio: " + municipio + " | Registro: " + fechaRegistro
+                + " | Guías: " + guias.Size();
     }
 }
