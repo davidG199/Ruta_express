@@ -1,4 +1,6 @@
-package com.mycompany.rutaexpress;
+package com.mycompany.rutaexpress.main;
+
+import com.mycompany.rutaexpress.NodoPaquete;
 
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;

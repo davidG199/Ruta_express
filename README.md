@@ -23,7 +23,7 @@ Con `javac`:
 ```bash
 mkdir -p target/classes
 javac -encoding UTF-8 -d target/classes $(find src/main/java -name "*.java")
-java -cp target/classes com.mycompany.rutaexpress.RutaExpress
+java -cp target/classes com.mycompany.rutaexpress.main.RutaExpress
 ```
 
 También puede ejecutarse con `./run.sh` en Linux.

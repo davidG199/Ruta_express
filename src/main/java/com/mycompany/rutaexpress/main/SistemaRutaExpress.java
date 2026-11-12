@@ -1,4 +1,6 @@
-package com.mycompany.rutaexpress;
+package com.mycompany.rutaexpress.main;
+
+import com.mycompany.rutaexpress.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
