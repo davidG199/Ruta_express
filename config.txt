@@ -1,0 +1,4 @@
+precioGalon=15800
+correoEmisor=operaciones@rutaexpress.com
+claveCorreo=DEMO-1234
+correoCoordinador=coordinacion@rutaexpress.com

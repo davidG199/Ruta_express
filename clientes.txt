@@ -1,0 +1,6 @@
+# documento;tipoCliente;nombre;telefono;correo;direccion;municipio
+1001;NATURAL;Ana María Restrepo;3001112233;ana@correo.com;Calle 10 # 20-30;Medellín
+1002;EMPRESA;Distribuciones El Progreso;3002223344;compras@progreso.com;Carrera 45 # 12-08;Bello
+1003;NATURAL;Carlos Andrés Gómez;3003334455;carlos@correo.com;Transversal 30 # 5-10;Envigado
+1004;NATURAL;Luisa Fernanda Ríos;3004445566;luisa@correo.com;Calle 80 # 40-20;Rionegro
+1005;EMPRESA;Café del Oriente S.A.S.;3005556677;logistica@cafeoriente.com;Carrera 20 # 8-15;Rionegro

@@ -1,0 +1,6 @@
+# guia;documentoRemitente;nombreDestinatario;telefonoDestinatario;correoDestinatario;direccionEntrega;sedeOrigen;sedeDestino;pesoKg;largoCm;anchoCm;altoCm;valorDeclarado;tipoServicio;fragil
+100000001;1001;Juan Pérez;3101112233;juan@correo.com;Calle 20 # 30-40;BEL;RNG;2.5;30;20;15;150000;ESTANDAR;N
+100000002;1002;María López;3102223344;maria@correo.com;Carrera 10 # 5-25;MED;APO;8.0;40;30;25;400000;EXPRESS;S
+100000003;1003;Pedro Ramírez;3103334455;pedro@correo.com;Calle 5 # 2-10;ENV;TUR;1.2;20;15;10;80000;ESTANDAR;N
+100000004;1004;Sofía Torres;3104445566;sofia@correo.com;Transversal 8 # 9-12;RNG;MED;4.0;35;25;20;250000;CONTRA_ENTREGA;N
+100000005;1005;Andrés Mejía;3105556677;andres@correo.com;Carrera 30 # 15-05;ITA;RNG;12.0;50;40;30;600000;EXPRESS;S

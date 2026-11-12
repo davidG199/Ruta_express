@@ -1,0 +1,5 @@
+target/
+*.class
+notificaciones.log
+fallos.log
+informe_*.txt

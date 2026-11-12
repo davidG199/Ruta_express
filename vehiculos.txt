@@ -1,0 +1,4 @@
+# placa;tipo;sedeBase;estado;capacidadKg;capacidadM3;rendimientoKmGalon;kmRecorridos;cedula;nombre;celular;correo;categoriaLicencia
+ABC123;CAMION;MED;DISPONIBLE;5000;30;8;12000;7001;Jorge Ramírez;3201112233;jorge@rutaexpress.com;C3
+XYZ789;MOTO;BEL;DISPONIBLE;10;0.5;35;3000;7002;María Zapata;3202223344;maria@rutaexpress.com;A2
+QWE456;FURGONETA;RNG;DISPONIBLE;2500;15;12;8000;7003;Luis Torres;3203334455;luis@rutaexpress.com;C2

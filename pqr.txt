@@ -1,0 +1,4 @@
+# radicado;documentoCliente;numeroGuia;tipo;estado;descripcion;fechaRadicacion
+PQR-1001;1003;100000003;QUEJA;ABIERTA;El paquete llegó con retraso;2026-11-11T09:30
+PQR-1002;1002;;SUGERENCIA;ABIERTA;Ampliar la cobertura en Urabá;2026-11-11T10:15
+PQR-1003;1004;100000004;RECLAMO;CERRADA;Cobro adicional no explicado;2026-11-10T15:00
