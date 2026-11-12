@@ -1,7 +1,7 @@
 package com.mycompany.rutaexpress.domain.network;
 
 import com.mycompany.rutaexpress.estructures.graphs.GrafoRed;
-import com.mycompany.rutaexpress.estructures.lists.ListaSimple;
+import com.mycompany.rutaexpress.estructures.lists.List;
 
 public class RedManager {
     private final GrafoRed red;
@@ -52,7 +52,7 @@ public class RedManager {
     }
 
     public Sede buscarSede(String codigo) { return red.buscarSede(codigo); }
-    public ListaSimple<Sede> listarSedes() { return red.getSedes(); }
+    public List listarSedes() { return red.getSedes(); }
     public int cantidadSedes() { return red.getCantidadSedes(); }
     public int cantidadVias() { return red.getCantidadVias(); }
     public GrafoRed getRed() { return red; }

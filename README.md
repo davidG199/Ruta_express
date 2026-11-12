@@ -53,7 +53,7 @@ Todas están en clases propias; no se usa `ArrayList`, `LinkedList`, `HashMap`,
 | Lista simple de seguimientos | `ListaSimpleSeguimientos`, `NodoSeguimiento` |
 | Grafo ponderado | `GrafoRed` + Dijkstra con arreglos |
 
-`NodoPaquete` es a la vez el nodo del árbol y la entidad del paquete. El árbol,
+`NodoPaquete` es a la vez el node del árbol y la entidad del paquete. El árbol,
 la cola de la sede y la pila del vehículo apuntan a la **misma instancia**; no se
 copian objetos.
 

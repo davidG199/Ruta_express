@@ -1,6 +1,7 @@
 package com.mycompany.rutaexpress.domain.parcel;
 
 import com.mycompany.rutaexpress.estructures.trees.ArbolBinario;
+import java.util.function.Consumer;
 
 public class PaqueteManager {
     private final ArbolBinario<Paquete> paquetes;
@@ -51,6 +52,21 @@ public class PaqueteManager {
             }
         });
         return resultado.length() == 0 ? "No hay paquetes en estado " + estado + "." : resultado.toString();
+    }
+
+    public void recorrerPorRemitente(String documento, Consumer<Paquete> consumidor) {
+        if (documento == null || consumidor == null) return;
+        paquetes.recorrerEnOrden(paquete -> {
+            if (documento.trim().equalsIgnoreCase(paquete.getDocumentoRemitente())) {
+                consumidor.accept(paquete);
+            }
+        });
+    }
+
+    public double totalPagadoPorRemitente(String documento) {
+        final double[] total = {0};
+        recorrerPorRemitente(documento, paquete -> total[0] += paquete.getCostoEnvio());
+        return total[0];
     }
     public int cantidad() { return paquetes.cantidad(); }
     public int altura() { return paquetes.altura(); }

@@ -206,7 +206,7 @@
      data-to="ColaPaquetes"
      data-type="composition"
      data-marker-at="from"
-     data-label="contiene en su nodo"
+     data-label="contiene en su node"
      points="1675.9366666666663,2072 1675.9366666666663,2500"
      fill="none"
      stroke="var(--_line)"
@@ -294,7 +294,7 @@
      data-to="ListaSimpleGuias"
      data-type="composition"
      data-marker-at="from"
-     data-label="contiene en su nodo"
+     data-label="contiene en su node"
      points="2734.3153333333325,2420 2734.3153333333325,2768"
      fill="none"
      stroke="var(--_line)"
@@ -368,7 +368,7 @@
      data-to="ListaSimpleHistorial"
      data-type="composition"
      data-marker-at="from"
-     data-label="contiene en su nodo"
+     data-label="contiene en su node"
      points="1910.9486666666662,3872 1910.948666666666,4012.3"
      fill="none"
      stroke="var(--_line)"
@@ -429,7 +429,7 @@
      data-to="PilaPaquetes"
      data-type="composition"
      data-marker-at="from"
-     data-label="contiene en su nodo"
+     data-label="contiene en su node"
      points="1957.915333333333,1584 1957.915333333333,1594 1910.9486666666662,1594 1910.9486666666662,2192"
      fill="none"
      stroke="var(--_line)"
@@ -491,7 +491,7 @@
      data-to="ListaSimpleSeguimientos"
      data-type="composition"
      data-marker-at="from"
-     data-label="contiene en su nodo"
+     data-label="contiene en su node"
      points="219.6,1524 219.60000000000008,2212"
      fill="none"
      stroke="var(--_line)"
@@ -6279,7 +6279,7 @@
      font-weight="400"
      fill="var(--_text-muted)"
      dy="3.8499999999999996"
-     id="text1076">contiene en su nodo</text>
+     id="text1076">contiene en su node</text>
   <text
      x="1251.8209999999997"
      y="1382"
@@ -6306,7 +6306,7 @@
      font-weight="400"
      fill="var(--_text-muted)"
      dy="3.8499999999999996"
-     id="text1079">contiene en su nodo</text>
+     id="text1079">contiene en su node</text>
   <text
      x="1617.7306666666661"
      y="3092"
@@ -6324,7 +6324,7 @@
      font-weight="400"
      fill="var(--_text-muted)"
      dy="3.8499999999999996"
-     id="text1081">contiene en su nodo</text>
+     id="text1081">contiene en su node</text>
   <text
      x="1857.494666666666"
      y="1850"
@@ -6333,7 +6333,7 @@
      font-weight="400"
      fill="var(--_text-muted)"
      dy="3.8499999999999996"
-     id="text1082">contiene en su nodo</text>
+     id="text1082">contiene en su node</text>
   <text
      x="1852.7426666666659"
      y="2834"
@@ -6351,5 +6351,5 @@
      font-weight="400"
      fill="var(--_text-muted)"
      dy="3.8499999999999996"
-     id="text1084">contiene en su nodo</text>
+     id="text1084">contiene en su node</text>
 </svg>

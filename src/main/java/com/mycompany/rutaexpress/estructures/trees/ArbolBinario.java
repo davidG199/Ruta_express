@@ -5,7 +5,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 public class ArbolBinario<T> {
-    private NodoArbol<T> raiz;
+    private BinaryNode raiz;
     private final Comparator<T> comparador;
 
     public ArbolBinario(Comparator<T> comparador) {
@@ -16,12 +16,12 @@ public class ArbolBinario<T> {
         if (valor != null) raiz = insertar(raiz, valor);
     }
 
-    private NodoArbol<T> insertar(NodoArbol<T> nodo, T valor) {
-        if (nodo == null) return new NodoArbol<>(valor);
-        if (comparador.compare(valor, nodo.getValor()) < 0) {
-            nodo.setIzquierdo(insertar(nodo.getIzquierdo(), valor));
+    private BinaryNode insertar(BinaryNode nodo, T valor) {
+        if (nodo == null) return new BinaryNode(valor);
+        if (comparador.compare(valor, (T) nodo.getData()) < 0) {
+            nodo.setLeft(insertar(nodo.getLeft(), valor));
         } else {
-            nodo.setDerecho(insertar(nodo.getDerecho(), valor));
+            nodo.setRight(insertar(nodo.getRight(), valor));
         }
         return nodo;
     }
@@ -30,41 +30,42 @@ public class ArbolBinario<T> {
         return buscarRecursivo(raiz, criterio);
     }
 
-    private T buscarRecursivo(NodoArbol<T> nodo, Predicate<T> criterio) {
+    private T buscarRecursivo(BinaryNode nodo, Predicate<T> criterio) {
         if (nodo == null) return null;
-        if (criterio.test(nodo.getValor())) return nodo.getValor();
-        T encontrado = buscarRecursivo(nodo.getIzquierdo(), criterio);
-        return encontrado != null ? encontrado : buscarRecursivo(nodo.getDerecho(), criterio);
+        T valor = (T) nodo.getData();
+        if (criterio.test(valor)) return valor;
+        T encontrado = buscarRecursivo(nodo.getLeft(), criterio);
+        return encontrado != null ? encontrado : buscarRecursivo(nodo.getRight(), criterio);
     }
 
     public void recorrerEnOrden(Consumer<T> consumidor) {
         recorrerEnOrden(raiz, consumidor);
     }
 
-    private void recorrerEnOrden(NodoArbol<T> nodo, Consumer<T> consumidor) {
+    private void recorrerEnOrden(BinaryNode nodo, Consumer<T> consumidor) {
         if (nodo == null) return;
-        recorrerEnOrden(nodo.getIzquierdo(), consumidor);
-        consumidor.accept(nodo.getValor());
-        recorrerEnOrden(nodo.getDerecho(), consumidor);
+        recorrerEnOrden(nodo.getLeft(), consumidor);
+        consumidor.accept((T) nodo.getData());
+        recorrerEnOrden(nodo.getRight(), consumidor);
     }
 
     public int cantidad() { return cantidad(raiz); }
-    private int cantidad(NodoArbol<T> nodo) {
-        return nodo == null ? 0 : 1 + cantidad(nodo.getIzquierdo()) + cantidad(nodo.getDerecho());
+    private int cantidad(BinaryNode nodo) {
+        return nodo == null ? 0 : 1 + cantidad(nodo.getLeft()) + cantidad(nodo.getRight());
     }
 
     public int altura() { return altura(raiz); }
-    private int altura(NodoArbol<T> nodo) {
-        return nodo == null ? 0 : 1 + Math.max(altura(nodo.getIzquierdo()), altura(nodo.getDerecho()));
+    private int altura(BinaryNode nodo) {
+        return nodo == null ? 0 : 1 + Math.max(altura(nodo.getLeft()), altura(nodo.getRight()));
     }
 
     public int contarHojas() { return contarHojas(raiz); }
-    private int contarHojas(NodoArbol<T> nodo) {
+    private int contarHojas(BinaryNode nodo) {
         if (nodo == null) return 0;
-        if (nodo.getIzquierdo() == null && nodo.getDerecho() == null) return 1;
-        return contarHojas(nodo.getIzquierdo()) + contarHojas(nodo.getDerecho());
+        if (nodo.getLeft() == null && nodo.getRight() == null) return 1;
+        return contarHojas(nodo.getLeft()) + contarHojas(nodo.getRight());
     }
 
-    public NodoArbol<T> getRaiz() { return raiz; }
+    public BinaryNode getRaiz() { return raiz; }
     public boolean estaVacio() { return raiz == null; }
 }

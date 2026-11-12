@@ -35,18 +35,29 @@ public class ArbolTernario<T> {
 
     public void buscarPorPrefijo(String prefijo, Consumer<T> consumidor) {
         String buscado = normalizar(prefijo);
-        if (!buscado.isEmpty()) recolectar(raiz, buscado, consumidor);
+        if (buscado.isEmpty()) return;
+        NodoTernarioGenerico<T> nodo = buscarNodo(raiz, buscado, 0);
+        if (nodo == null) return;
+        if (nodo.isFin() && nodo.getValor() != null) consumidor.accept(nodo.getValor());
+        recolectarOrdenado(nodo.getCentro(), consumidor);
     }
 
-    private void recolectar(NodoTernarioGenerico<T> nodo, String prefijo, Consumer<T> consumidor) {
+    private NodoTernarioGenerico<T> buscarNodo(NodoTernarioGenerico<T> nodo,
+            String texto, int posicion) {
+        if (nodo == null) return null;
+        char letra = texto.charAt(posicion);
+        if (letra < nodo.getLetra()) return buscarNodo(nodo.getIzquierdo(), texto, posicion);
+        if (letra > nodo.getLetra()) return buscarNodo(nodo.getDerecho(), texto, posicion);
+        if (posicion + 1 == texto.length()) return nodo;
+        return buscarNodo(nodo.getCentro(), texto, posicion + 1);
+    }
+
+    private void recolectarOrdenado(NodoTernarioGenerico<T> nodo, Consumer<T> consumidor) {
         if (nodo == null) return;
-        if (nodo.isFin() && nodo.getValor() != null
-                && normalizar(extractorTexto.apply(nodo.getValor())).startsWith(prefijo)) {
-            consumidor.accept(nodo.getValor());
-        }
-        recolectar(nodo.getIzquierdo(), prefijo, consumidor);
-        recolectar(nodo.getCentro(), prefijo, consumidor);
-        recolectar(nodo.getDerecho(), prefijo, consumidor);
+        recolectarOrdenado(nodo.getIzquierdo(), consumidor);
+        if (nodo.isFin() && nodo.getValor() != null) consumidor.accept(nodo.getValor());
+        recolectarOrdenado(nodo.getCentro(), consumidor);
+        recolectarOrdenado(nodo.getDerecho(), consumidor);
     }
 
     public void recorrer(Consumer<T> consumidor) {
