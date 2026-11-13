@@ -2,8 +2,10 @@ package com.mycompany.rutaexpress.main;
 
 import com.mycompany.rutaexpress.*;
 import com.mycompany.rutaexpress.domain.client.Cliente;
-import com.mycompany.rutaexpress.domain.client.ClienteManager;
+import com.mycompany.rutaexpress.domain.client.ClientManager;
 import com.mycompany.rutaexpress.estructures.lists.List;
+import com.mycompany.rutaexpress.files.GestorArchivos;
+import com.mycompany.rutaexpress.files.GestorNotificaciones;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -11,7 +13,7 @@ import java.util.Random;
 
 public class SistemaRutaExpress {
     private GrafoRed red;
-    private ClienteManager clienteManager;
+    private ClientManager clientManager;
     private ArbolPaquetes paquetes;
     private ListaDobleVehiculos flota;
     private ColaPQR pqrs;
@@ -25,7 +27,7 @@ public class SistemaRutaExpress {
         archivos = new GestorArchivos();
         notificador = new GestorNotificaciones(archivos);
         red = new GrafoRed();
-        clienteManager = new ClienteManager(null, notificador);
+        clientManager = new ClientManager(notificador);
         paquetes = new ArbolPaquetes();
         flota = new ListaDobleVehiculos();
         pqrs = new ColaPQR();
@@ -220,40 +222,9 @@ public class SistemaRutaExpress {
             ultimoError = "Faltan datos del cliente.";
             return false;
         }
-        boolean registrado = clienteManager.registrar(cliente);
-        ultimoError = clienteManager.getUltimoError();
+        boolean registrado = clientManager.registrar(cliente);
+        ultimoError = clientManager.getUltimoError();
         return registrado;
-    }
-
-//    public Cliente buscarClientePorDocumento(String documento) {
-//        return clienteManager.buscarPorDocumento(documento);
-//    }
-
-    public String buscarClientes(String prefijo) {
-        List encontrados = clienteManager.buscarPorPrefijo(prefijo);
-        if (encontrados.isEmpty()) {
-            return "No hay clientes cuyo nombre empiece por \"" + prefijo + "\".";
-        }
-        return encontrados.toString();
-    }
-
-    public String verHistorialCliente(String documento) {
-        Cliente c = clienteManager.buscarPorDocumento(documento);
-        if (c == null) {
-            return "No existe el cliente " + documento + ".";
-        }
-        StringBuilder sb = new StringBuilder(c.toString()).append("\n");
-        sb.append("Guías del cliente:\n").append(c.getGuias()).append("\n");
-        com.mycompany.rutaexpress.estructures.lists.Node guia = c.getGuias().getHead();
-        while (guia != null) {
-            NodoPaquete p = paquetes.buscar((String) guia.getData());
-            if (p != null) {
-                sb.append("Paquete ").append(p.getGuia()).append(" - ").append(p.getEstado()).append("\n");
-                sb.append(p.getHistorial().recorrer()).append("\n");
-            }
-            guia = guia.getLink();
-        }
-        return sb.toString();
     }
 
     public int cargarVehiculos() {
@@ -430,7 +401,7 @@ public class SistemaRutaExpress {
     }
 
     private NodoPaquete admitirInterno(String[] d, String guia) {
-        Cliente remitente = clienteManager.buscarPorDocumento(d[0]);
+        Cliente remitente = clientManager.buscarPorDocumento(d[0]);
         if (remitente == null) {
             ultimoError = "No existe el cliente remitente " + d[0] + ".";
             return null;
@@ -591,7 +562,7 @@ public class SistemaRutaExpress {
             if (!c[4].equalsIgnoreCase("ABIERTA")) {
                 continue;
             }
-            if (clienteManager.buscarPorDocumento(c[1]) == null) {
+            if (clientManager.buscarPorDocumento(c[1]) == null) {
                 continue;
             }
             LocalDateTime fecha;
@@ -615,7 +586,7 @@ public class SistemaRutaExpress {
             ultimoError = "Faltan datos de la PQR.";
             return false;
         }
-        if (clienteManager.buscarPorDocumento(d[0]) == null) {
+        if (clientManager.buscarPorDocumento(d[0]) == null) {
             ultimoError = "No existe el cliente " + d[0] + ".";
             return false;
         }
@@ -690,7 +661,7 @@ public class SistemaRutaExpress {
         sb.append("Precio del galón: $").append(String.format("%.0f", precioGalon)).append("\n\n");
         sb.append("Red: ").append(red.getCantidadSedes()).append(" sedes, ")
                 .append(red.getCantidadVias()).append(" vías\n");
-        sb.append("Clientes: ").append(clienteManager.listar().Size()).append("\n");
+        //sb.append("Clientes: ").append(clientManager.listar().Size()).append("\n");
         sb.append("Paquetes: ").append(paquetes.cantidad()).append("\n");
         sb.append("Altura del árbol: ").append(paquetes.altura())
                 .append(" | Hojas: ").append(paquetes.contarHojas()).append("\n");
@@ -743,13 +714,8 @@ public class SistemaRutaExpress {
         return red;
     }
 
-    public ClienteManager getClienteManager() {
-        return clienteManager;
-    }
-
-    public String listarClientes() {
-        List clientes = clienteManager.listar();
-        return clientes.isEmpty() ? "No hay clientes registrados." : clientes.toString();
+    public ClientManager getClienteManager() {
+        return clientManager;
     }
 
     public ArbolPaquetes getPaquetes() {

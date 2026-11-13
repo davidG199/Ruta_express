@@ -3,3 +3,4 @@ target/
 notificaciones.log
 fallos.log
 informe_*.txt
+config.txt

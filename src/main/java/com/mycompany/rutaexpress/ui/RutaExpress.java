@@ -2,9 +2,8 @@ package com.mycompany.rutaexpress.ui;
 
 import com.mycompany.rutaexpress.NodoPaquete;
 import com.mycompany.rutaexpress.domain.client.Cliente;
-import com.mycompany.rutaexpress.domain.client.ClienteManager;
+import com.mycompany.rutaexpress.domain.client.ClientManager;
 import com.mycompany.rutaexpress.main.SistemaRutaExpress;
-import com.mycompany.rutaexpress.domain.client.ClienteManager;
 
 /*
  * Interfaz de usuario de la aplicación RutaExpress.
@@ -16,9 +15,9 @@ public class RutaExpress {
 
     public static void main(String[] args) {
         SistemaRutaExpress sistema = new SistemaRutaExpress();
-        ClienteManager clienteManager = new ClienteManager();
-
         mostrar("Carga inicial", sistema.inicializar());
+
+        ClientManager clientManager = sistema.getClienteManager();
 
         String[] menu = {"Clientes", "Red de sedes", "Paquetes", "Flota",
             "PQR", "Reportes", "Configuración", "Salir"};
@@ -31,7 +30,7 @@ public class RutaExpress {
             }
             switch (opcion) {
                 case "Clientes" ->
-                    menuClientes(sistema);
+                    menuClientes(clientManager);
                 case "Red de sedes" ->
                     menuRed(sistema);
                 case "Paquetes" ->
@@ -51,7 +50,7 @@ public class RutaExpress {
     }
 
     //Menu para clientes
-    private static void menuClientes(SistemaRutaExpress sistema) {
+    private static void menuClientes(ClientManager clientManager) {
         String[] opciones = {"Registrar cliente", "Buscar por prefijo",
             "Ver historial de cliente", "Listar clientes", "Volver"};
         String opcion;
@@ -92,27 +91,31 @@ public class RutaExpress {
                     }
 
                     Cliente cliente = new Cliente(documento, tipo, nombre, telefono, correo, direccion, municipio);
-                    if (sistema.registrarCliente(cliente)) {
+                    if (clientManager.registrar(cliente)) {
                         aviso("Cliente registrado correctamente.");
+                        // si el cliente se registró correctamente, se envía un correo de bienvenida
+                        String resultadoCorreo = clientManager.enviarBienvenida(cliente);
+                        aviso(resultadoCorreo);
                     } else {
-                        aviso(sistema.getUltimoError());
+                        aviso(clientManager.getUltimoError());
                     }
+
                 }
                 case "Buscar por prefijo" -> {
                     String prefijo = pedir("Prefijo del nombre:");
                     if (prefijo != null) {
-                        mostrar("Clientes encontrados", sistema.buscarClientes(prefijo));
+                        mostrar("Clientes encontrados", clientManager.buscarPorPrefijo(prefijo));
                     }
                 }
                 case "Ver historial de cliente" -> {
                     String documento = pedirObligatorio("Documento del cliente:");
                     if (documento != null) {
                         mostrar("Historial del cliente",
-                                sistema.verHistorialCliente(documento));
+                                clientManager.consultarHistorial(documento));
                     }
                 }
                 case "Listar clientes" ->
-                    mostrar("Clientes", sistema.listarClientes());
+                    mostrar("Clientes", clientManager.listar());
             }
         } while (true);
     }
