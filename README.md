@@ -4,6 +4,19 @@ Programa de gestión logística para el proyecto final de Estructuras de Datos.
 Sigue el estilo de `Archivo601`: Java 21, Maven, menú con `JOptionPane`,
 clases con getters/setters y estructuras de datos implementadas a mano.
 
+## Arquitectura
+
+La aplicación está separada por responsabilidades:
+
+- `main/SistemaRutaExpress`: fachada que compone los managers y expone las
+  operaciones que consume la interfaz.
+- `domain`: entidades y managers de clientes, red, paquetes, vehículos, PQR y
+  configuración. Aquí vive la lógica de negocio.
+- `estructures`: estructuras genéricas implementadas a mano (`List`, `Cola`,
+  `Pila`, `ListaDoble`, árboles y grafo).
+- `files`: lectura/escritura de archivos, notificaciones y generación de informes.
+- `ui/RutaExpress`: menús de texto y diálogos.
+
 ## Requisitos
 
 - JDK 21
@@ -39,23 +52,16 @@ Todas están en clases propias; no se usa `ArrayList`, `LinkedList`, `HashMap`,
 
 | Estructura | Clases |
 |---|---|
-| Lista simple de clientes | `ListaSimpleClientes`, `NodoCliente` |
-| Lista simple de guías | `ListaSimpleGuias`, `NodoGuia` |
-| Árbol ternario de búsqueda | `ArbolTernarioClientes`, `NodoTernario` |
-| Lista simple de sedes | `ListaSimpleSedes`, `NodoSede` |
-| Lista simple de vías | `ListaSimpleVias`, `NodoVia` |
-| Cola de despacho | `ColaPaquetes`, `NodoColaPaquete` |
-| Árbol binario de búsqueda | `ArbolPaquetes`, `NodoPaquete` |
-| Lista simple de historial | `ListaSimpleHistorial`, `NodoHistorial` |
-| Pila de paquetes | `PilaPaquetes`, `NodoPilaPaquete` |
-| Lista doblemente enlazada | `ListaDobleVehiculos`, `NodoVehiculo` |
-| Cola de PQR | `ColaPQR`, `NodoPQR` |
-| Lista simple de seguimientos | `ListaSimpleSeguimientos`, `NodoSeguimiento` |
+| Lista simple | `List`, `Node` |
+| Árbol ternario de búsqueda | `ArbolTernario` |
+| Árbol binario de búsqueda | `ArbolBinario` |
+| Lista doblemente enlazada | `ListaDoble` |
+| Cola | `Cola` |
+| Pila | `Pila` |
 | Grafo ponderado | `GrafoRed` + Dijkstra con arreglos |
 
-`NodoPaquete` es a la vez el node del árbol y la entidad del paquete. El árbol,
-la cola de la sede y la pila del vehículo apuntan a la **misma instancia**; no se
-copian objetos.
+La entidad activa es `domain.parcel.Paquete`. El árbol de paquetes, la cola de la
+sede y la pila del vehículo apuntan a la **misma instancia**; no se copian objetos.
 
 ## Operaciones del menú
 

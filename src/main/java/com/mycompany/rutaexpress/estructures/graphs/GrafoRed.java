@@ -42,7 +42,7 @@ public class GrafoRed {
         return true;
     }
 
-    private Via buscarVia(String origen, String destino) {
+    public Via buscarVia(String origen, String destino) {
         if (origen == null || destino == null) return null;
         for (Node node = vias.getHead(); node != null; node = node.getLink()) {
             Via via = (Via) node.getData();
@@ -141,7 +141,95 @@ public class GrafoRed {
         return null;
     }
 
+    public List sedesAisladas() {
+        List aisladas = new List();
+        int n = sedes.Size();
+        if (n == 0) {
+            return aisladas;
+        }
+
+        int[] componente = new int[n];
+        int[] tamanios = new int[n];
+        for (int i = 0; i < n; i++) {
+            componente[i] = -1;
+        }
+
+        int totalComponentes = 0;
+        for (int i = 0; i < n; i++) {
+            if (componente[i] == -1) {
+                int[] cuenta = new int[1];
+                marcarComponente(i, componente, totalComponentes, cuenta);
+                tamanios[totalComponentes] = cuenta[0];
+                totalComponentes++;
+            }
+        }
+
+        int mayor = 0;
+        for (int i = 1; i < totalComponentes; i++) {
+            if (tamanios[i] > tamanios[mayor]) {
+                mayor = i;
+            }
+        }
+
+        for (int i = 0; i < n; i++) {
+            if (componente[i] != mayor) {
+                aisladas.AddLast(sedeEn(i));
+            }
+        }
+        return aisladas;
+    }
+
+    private void marcarComponente(int indice, int[] componente, int id, int[] cuenta) {
+        if (indice < 0 || componente[indice] != -1) {
+            return;
+        }
+        componente[indice] = id;
+        cuenta[0]++;
+        Sede sede = sedeEn(indice);
+        for (Node node = vias.getHead(); node != null; node = node.getLink()) {
+            Via via = (Via) node.getData();
+            if (via.getOrigen().equalsIgnoreCase(sede.getCodigo()) && via.estaHabilitada()) {
+                marcarComponente(indiceDe(via.getDestino()), componente, id, cuenta);
+            }
+        }
+    }
+
+    public String mostrarViasDeSede(String codigo) {
+        if (codigo == null) {
+            return "Sin vías registradas.";
+        }
+        StringBuilder resultado = new StringBuilder();
+        for (Node node = vias.getHead(); node != null; node = node.getLink()) {
+            Via via = (Via) node.getData();
+            if (via.getOrigen().equalsIgnoreCase(codigo.trim())) {
+                resultado.append("  -> ").append(via).append("\n");
+            }
+        }
+        return resultado.length() == 0 ? "Sin vías registradas." : resultado.toString();
+    }
+
+    public String mostrarRed() {
+        if (sedes.isEmpty()) {
+            return "No hay sedes registradas.";
+        }
+        StringBuilder resultado = new StringBuilder("RED DE SEDES\n\n");
+        for (Node node = sedes.getHead(); node != null; node = node.getLink()) {
+            Sede sede = (Sede) node.getData();
+            resultado.append(sede).append("\n");
+            for (Node nodoVia = vias.getHead(); nodoVia != null; nodoVia = nodoVia.getLink()) {
+                Via via = (Via) nodoVia.getData();
+                if (via.getOrigen().equalsIgnoreCase(sede.getCodigo())
+                        && sede.getCodigo().compareToIgnoreCase(via.getDestino()) < 0) {
+                    resultado.append("  -> ").append(via).append("\n");
+                }
+            }
+            resultado.append("\n");
+        }
+        return resultado.toString();
+    }
+
     public List getSedes() { return sedes; }
+    public List getVias() { return vias; }
     public int getCantidadSedes() { return sedes.Size(); }
     public int getCantidadVias() { return vias.Size() / 2; }
 }

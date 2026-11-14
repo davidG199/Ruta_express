@@ -1,5 +1,8 @@
 package com.mycompany.rutaexpress.domain.parcel;
 
+import com.mycompany.rutaexpress.estructures.lists.List;
+import com.mycompany.rutaexpress.estructures.lists.Node;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -23,6 +26,7 @@ public class Paquete {
     private boolean fragil;
     private LocalDateTime fechaAdmision;
     private LocalDate fechaMaximaEntrega;
+    private final List historial;
 
     public Paquete(String numeroGuia, String documentoRemitente, String nombreDestinatario,
             String telefonoDestinatario, String correoDestinatario, String direccionEntrega,
@@ -47,6 +51,7 @@ public class Paquete {
         this.fragil = fragil;
         this.fechaAdmision = LocalDateTime.now();
         this.fechaMaximaEntrega = calcularFechaMaxima();
+        this.historial = new List();
     }
 
     public double calcularPesoVolumetrico() {
@@ -84,6 +89,28 @@ public class Paquete {
 
     public boolean estaVencido(LocalDate fecha) {
         return fecha != null && fechaMaximaEntrega != null && fecha.isAfter(fechaMaximaEntrega);
+    }
+
+    public void agregarEvento(String codigoSede, String descripcion, String responsable) {
+        historial.AddLast(new EventoPaquete(LocalDateTime.now(), codigoSede,
+                descripcion, responsable));
+    }
+
+    public List getHistorial() {
+        return historial;
+    }
+
+    public String historialTexto() {
+        if (historial.isEmpty()) {
+            return "Sin eventos registrados.";
+        }
+        StringBuilder resultado = new StringBuilder();
+        Node actual = historial.getHead();
+        while (actual != null) {
+            resultado.append("- ").append(actual.getData()).append("\n");
+            actual = actual.getLink();
+        }
+        return resultado.toString();
     }
 
     public String getGuia() {
@@ -242,5 +269,25 @@ public class Paquete {
 
     public void setFechaMaximaEntrega(LocalDate fechaMaximaEntrega) {
         this.fechaMaximaEntrega = fechaMaximaEntrega;
+    }
+
+    @Override
+    public String toString() {
+        return "Guía: " + numeroGuia
+                + "\nRemitente: " + documentoRemitente
+                + "\nDestinatario: " + nombreDestinatario + " | Tel: " + telefonoDestinatario
+                + "\nCorreo: " + correoDestinatario
+                + "\nDirección: " + direccionEntrega
+                + "\nRuta: " + sedeOrigen + " -> " + sedeDestino
+                + "\nPeso: " + pesoKg + " kg | Volumétrico: "
+                + String.format("%.2f", calcularPesoVolumetrico()) + " kg | Facturable: "
+                + String.format("%.2f", calcularPesoFacturable()) + " kg"
+                + "\nMedidas: " + largoCm + " x " + anchoCm + " x " + altoCm + " cm"
+                + "\nValor declarado: $" + String.format("%.0f", valorDeclarado)
+                + " | Costo envío: $" + String.format("%.0f", costoEnvio)
+                + "\nServicio: " + tipoServicio + " | Frágil: " + (fragil ? "Sí" : "No")
+                + "\nEstado: " + estado
+                + "\nAdmisión: " + fechaAdmision
+                + " | Fecha máxima: " + fechaMaximaEntrega;
     }
 }

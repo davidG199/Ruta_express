@@ -1,4 +1,10 @@
 precioGalon=15800
-correoEmisor=operaciones@rutaexpress.com
-claveCorreo=DEMO-1234
+correoEmisor=operacionesrutaexpress@gmail.com
+claveCorreo=DEMO-1234*
 correoCoordinador=coordinacion@rutaexpress.com
+
+claveAplicacion=chdg gdek frmx aqlr
+servidorSmtp=smtp.gmail.com
+puertoSmtp=587
+autenticacionSmtp=true
+starttls=true

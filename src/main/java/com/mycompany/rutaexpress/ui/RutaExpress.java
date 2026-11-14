@@ -1,8 +1,8 @@
 package com.mycompany.rutaexpress.ui;
 
-import com.mycompany.rutaexpress.NodoPaquete;
 import com.mycompany.rutaexpress.domain.client.Cliente;
 import com.mycompany.rutaexpress.domain.client.ClientManager;
+import com.mycompany.rutaexpress.domain.parcel.Paquete;
 import com.mycompany.rutaexpress.main.SistemaRutaExpress;
 
 /*
@@ -93,9 +93,10 @@ public class RutaExpress {
                     Cliente cliente = new Cliente(documento, tipo, nombre, telefono, correo, direccion, municipio);
                     if (clientManager.registrar(cliente)) {
                         aviso("Cliente registrado correctamente.");
-                        // si el cliente se registró correctamente, se envía un correo de bienvenida
-                        String resultadoCorreo = clientManager.enviarBienvenida(cliente);
-                        aviso(resultadoCorreo);
+                        String resultadoCorreo = clientManager.getUltimoMensajeCorreo();
+                        if (resultadoCorreo != null && !resultadoCorreo.isEmpty()) {
+                            aviso(resultadoCorreo);
+                        }
                     } else {
                         aviso(clientManager.getUltimoError());
                     }
@@ -246,7 +247,7 @@ public class RutaExpress {
                         String.valueOf(largo), String.valueOf(ancho),
                         String.valueOf(alto), String.valueOf(valor), tipo,
                         fragil.equals("Sí") ? "S" : "N"};
-                    NodoPaquete p = sistema.admitirPaquete(datos);
+                    Paquete p = sistema.admitirPaquete(datos);
                     if (p == null) {
                         aviso(sistema.getUltimoError());
                     } else {

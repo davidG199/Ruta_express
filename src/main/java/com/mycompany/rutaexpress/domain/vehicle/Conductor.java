@@ -26,4 +26,10 @@ public class Conductor {
     public void setCorreo(String correo) { this.correo = correo; }
     public String getCategoriaLicencia() { return categoriaLicencia; }
     public void setCategoriaLicencia(String categoriaLicencia) { this.categoriaLicencia = categoriaLicencia; }
+
+    @Override
+    public String toString() {
+        return nombre + " | CC " + cedula + " | " + celular
+                + " | " + correo + " | Licencia " + categoriaLicencia;
+    }
 }

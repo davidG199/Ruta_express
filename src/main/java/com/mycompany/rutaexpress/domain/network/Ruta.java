@@ -35,4 +35,21 @@ public class Ruta {
     public double getDistanciaTotal() { return distanciaTotalKm; }
     public double getTiempoTotal() { return tiempoTotalMin; }
     public double getPeajesTotal() { return peajesTotal; }
+
+    @Override
+    public String toString() {
+        StringBuilder resultado = new StringBuilder("Ruta: ");
+        for (int i = 0; i < cantidad; i++) {
+            resultado.append(codigosSede[i]);
+            if (i < cantidad - 1) {
+                resultado.append(" -> ");
+            }
+        }
+        resultado.append("\nDistancia total: ")
+                .append(String.format("%.1f", distanciaTotalKm)).append(" km");
+        resultado.append("\nTiempo estimado: ")
+                .append(String.format("%.1f", tiempoTotalMin)).append(" min");
+        resultado.append("\nPeajes: $").append(String.format("%.0f", peajesTotal));
+        return resultado.toString();
+    }
 }
