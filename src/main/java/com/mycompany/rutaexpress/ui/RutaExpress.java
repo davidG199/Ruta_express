@@ -17,8 +17,6 @@ public class RutaExpress {
         SistemaRutaExpress sistema = new SistemaRutaExpress();
         mostrar("Carga inicial", sistema.inicializar());
 
-        ClientManager clientManager = sistema.getClienteManager();
-
         String[] menu = {"Clientes", "Red de sedes", "Paquetes", "Flota",
             "PQR", "Reportes", "Configuración", "Salir"};
         String opcion;
@@ -30,7 +28,7 @@ public class RutaExpress {
             }
             switch (opcion) {
                 case "Clientes" ->
-                    menuClientes(clientManager);
+                    menuClientes(sistema);
                 case "Red de sedes" ->
                     menuRed(sistema);
                 case "Paquetes" ->
@@ -50,7 +48,7 @@ public class RutaExpress {
     }
 
     //Menu para clientes
-    private static void menuClientes(ClientManager clientManager) {
+    private static void menuClientes(SistemaRutaExpress sistema) {
         String[] opciones = {"Registrar cliente", "Buscar por prefijo",
             "Ver historial de cliente", "Listar clientes", "Volver"};
         String opcion;
@@ -91,32 +89,32 @@ public class RutaExpress {
                     }
 
                     Cliente cliente = new Cliente(documento, tipo, nombre, telefono, correo, direccion, municipio);
-                    if (clientManager.registrar(cliente)) {
+                    if (sistema.registrarCliente(cliente)) {
                         aviso("Cliente registrado correctamente.");
-                        String resultadoCorreo = clientManager.getUltimoMensajeCorreo();
+                        String resultadoCorreo = sistema.getClienteManager().getUltimoMensajeCorreo();
                         if (resultadoCorreo != null && !resultadoCorreo.isEmpty()) {
                             aviso(resultadoCorreo);
                         }
                     } else {
-                        aviso(clientManager.getUltimoError());
+                        aviso(sistema.getUltimoError());
                     }
 
                 }
                 case "Buscar por prefijo" -> {
                     String prefijo = pedir("Prefijo del nombre:");
                     if (prefijo != null) {
-                        mostrar("Clientes encontrados", clientManager.buscarPorPrefijo(prefijo));
+                        mostrar("Clientes encontrados", sistema.getClienteManager().buscarPorPrefijo(prefijo));
                     }
                 }
                 case "Ver historial de cliente" -> {
                     String documento = pedirObligatorio("Documento del cliente:");
                     if (documento != null) {
                         mostrar("Historial del cliente",
-                                clientManager.consultarHistorial(documento));
+                                sistema.getClienteManager().consultarHistorial(documento));
                     }
                 }
                 case "Listar clientes" ->
-                    mostrar("Clientes", clientManager.listar());
+                    mostrar("Clientes", sistema.getClienteManager().listar());
             }
         } while (true);
     }

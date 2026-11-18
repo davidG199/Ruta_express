@@ -1,7 +1,7 @@
 package com.mycompany.rutaexpress.domain.pqr;
 
-import com.mycompany.rutaexpress.domain.client.ClienteRepository;
 import com.mycompany.rutaexpress.domain.parcel.PaqueteManager;
+import com.mycompany.rutaexpress.domain.client.ClientManager;
 import com.mycompany.rutaexpress.estructures.queues.Cola;
 import com.mycompany.rutaexpress.estructures.queues.NodoCola;
 import com.mycompany.rutaexpress.files.GestorArchivos;
@@ -15,7 +15,7 @@ import java.util.Random;
  */
 public class PqrManager {
     private final Cola<Pqr> pqrs;
-    private final ClienteRepository clienteRepository;
+    private final ClientManager clientManager;
     private final PaqueteManager paqueteManager;
     private final GestorNotificaciones notificador;
     private final Random random;
@@ -25,10 +25,10 @@ public class PqrManager {
         this(null, null, null);
     }
 
-    public PqrManager(ClienteRepository clienteRepository, PaqueteManager paqueteManager,
+    public PqrManager(ClientManager clientManager, PaqueteManager paqueteManager,
             GestorNotificaciones notificador) {
         this.pqrs = new Cola<>();
-        this.clienteRepository = clienteRepository;
+        this.clientManager = clientManager;
         this.paqueteManager = paqueteManager;
         this.notificador = notificador;
         this.random = new Random();
@@ -46,8 +46,8 @@ public class PqrManager {
             if (!columnas[4].equalsIgnoreCase("ABIERTA")) {
                 continue;
             }
-            if (clienteRepository == null
-                    || clienteRepository.buscarPorDocumento(columnas[1]) == null) {
+            if (clientManager == null
+                    || clientManager.buscarPorDocumento(columnas[1]) == null) {
                 continue;
             }
             LocalDateTime fecha;
@@ -90,8 +90,8 @@ public class PqrManager {
             ultimoError = "Faltan datos de la PQR.";
             return false;
         }
-        if (clienteRepository == null
-                || clienteRepository.buscarPorDocumento(datos[0]) == null) {
+        if (clientManager == null
+                || clientManager.buscarPorDocumento(datos[0]) == null) {
             ultimoError = "No existe el cliente " + datos[0] + ".";
             return false;
         }

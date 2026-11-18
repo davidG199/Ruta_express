@@ -1,7 +1,7 @@
 package com.mycompany.rutaexpress.domain.parcel;
 
 import com.mycompany.rutaexpress.domain.client.Cliente;
-import com.mycompany.rutaexpress.domain.client.ClienteRepository;
+import com.mycompany.rutaexpress.domain.client.ClientManager;
 import com.mycompany.rutaexpress.domain.network.RedManager;
 import com.mycompany.rutaexpress.domain.network.Ruta;
 import com.mycompany.rutaexpress.domain.network.Sede;
@@ -18,7 +18,7 @@ import java.util.function.Consumer;
  */
 public class PaqueteManager {
     private final ArbolBinario<Paquete> paquetes;
-    private final ClienteRepository clienteRepository;
+    private final ClientManager clientManager;
     private final RedManager redManager;
     private final GestorNotificaciones notificador;
     private final Random random;
@@ -28,11 +28,11 @@ public class PaqueteManager {
         this(null, null, null);
     }
 
-    public PaqueteManager(ClienteRepository clienteRepository, RedManager redManager,
+    public PaqueteManager(ClientManager clientManager, RedManager redManager,
             GestorNotificaciones notificador) {
         this.paquetes = new ArbolBinario<>(
                 (a, b) -> a.getGuia().compareToIgnoreCase(b.getGuia()));
-        this.clienteRepository = clienteRepository;
+        this.clientManager = clientManager;
         this.redManager = redManager;
         this.notificador = notificador;
         this.random = new Random();
@@ -78,12 +78,12 @@ public class PaqueteManager {
     }
 
     private Paquete admitirInterno(String[] datos, String guia) {
-        if (clienteRepository == null || redManager == null) {
+        if (clientManager == null || redManager == null) {
             ultimoError = "El gestor de paquetes no tiene clientes o red configurados.";
             return null;
         }
 
-        Cliente remitente = clienteRepository.buscarPorDocumento(datos[0]);
+        Cliente remitente = clientManager.buscarPorDocumento(datos[0]);
         if (remitente == null) {
             ultimoError = "No existe el cliente remitente " + datos[0] + ".";
             return null;

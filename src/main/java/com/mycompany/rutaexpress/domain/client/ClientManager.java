@@ -10,7 +10,7 @@ import com.mycompany.rutaexpress.files.GestorNotificaciones;
 /**
  * Gestiona las funcionalidades de los clientes de la aplicación.
  */
-public class ClientManager implements ClienteRepository {
+public class ClientManager {
     private final List clientes;
     private final ArbolTernario<Cliente> indicePorNombre;
     private PaqueteManager paqueteManager;
@@ -88,7 +88,7 @@ public class ClientManager implements ClienteRepository {
     /**
      * Envía un correo de bienvenida al cliente.
      *
-     * @param cliente El cliente al que se le enviará el correo.
+     * @param cliente: El cliente al que se le enviará el correo.
      * @return Un mensaje indicando el resultado de la operación.
      */
     public String enviarBienvenida(Cliente cliente) {
@@ -112,7 +112,12 @@ public class ClientManager implements ClienteRepository {
         return "No se pudo enviar el correo de bienvenida a " + destino + ".";
     }
 
-    @Override
+    /**
+     * Busca un cliente por su documento.
+     *
+     * @param documento: El documento del cliente a buscar.
+     * @return El cliente encontrado, o null si no se encuentra.
+     */
     public Cliente buscarPorDocumento(String documento) {
         if (documento == null) {
             return null;
