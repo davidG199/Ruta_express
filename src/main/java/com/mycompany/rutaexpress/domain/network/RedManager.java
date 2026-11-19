@@ -29,19 +29,43 @@ public class RedManager {
     public int cargarRed(String ruta) {
         red = new GrafoRed();
         String[] lineas = archivos.leerLineas(ruta);
+        String bloque = "";
         for (String linea : lineas) {
-            String[] columnas = linea.split(";", -1);
+            if (linea == null || linea.trim().isEmpty() || linea.trim().startsWith("#")) {
+                continue;
+            }
+            String contenido = linea.trim();
+            if (contenido.equalsIgnoreCase("SEDES")) {
+                bloque = "SEDES";
+                continue;
+            }
+            if (contenido.equalsIgnoreCase("VIAS")) {
+                bloque = "VIAS";
+                continue;
+            }
+
+            String[] columnas = contenido.split(";", -1);
             if (columnas.length == 0) {
                 continue;
             }
             try {
-                if (columnas[0].equalsIgnoreCase("SEDE") && columnas.length >= 9) {
+                if (columnas[0].trim().equalsIgnoreCase("SEDE") && columnas.length >= 9) {
                     String[] datos = new String[8];
                     System.arraycopy(columnas, 1, datos, 0, 8);
                     registrarSede(datos);
-                } else if (columnas[0].equalsIgnoreCase("VIA") && columnas.length >= 8) {
+                } else if (columnas[0].trim().equalsIgnoreCase("VIA") && columnas.length >= 8) {
                     String[] datos = new String[7];
                     System.arraycopy(columnas, 1, datos, 0, 7);
+                    registrarVia(datos);
+                } else if (bloque.equals("SEDES") && columnas.length >= 8) {
+                    // Orden canónico R15: capacidad precede al teléfono y correo.
+                    String[] datos = {columnas[0], columnas[1], columnas[2], columnas[3],
+                        columnas[4], columnas[6], columnas[7], columnas[5]};
+                    registrarSede(datos);
+                } else if (bloque.equals("VIAS") && columnas.length >= 7) {
+                    // Orden canónico R15: distancias antes del tipo y el estado.
+                    String[] datos = {columnas[0], columnas[1], columnas[5], columnas[6],
+                        columnas[2], columnas[3], columnas[4]};
                     registrarVia(datos);
                 }
             } catch (Exception e) {

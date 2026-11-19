@@ -252,6 +252,8 @@ public class RutaExpress {
                         mostrar("Paquete admitido", "Guía: " + p.getGuia()
                                 + "\nCosto: $" + String.format("%.0f", p.getCostoEnvio())
                                 + "\nFecha máxima: " + p.getFechaMaximaEntrega()
+                                + (sistema.getUltimoError().isEmpty() ? ""
+                                        : "\n\n" + sistema.getUltimoError())
                                 + "\n\n" + p);
                     }
                 }
@@ -379,10 +381,29 @@ public class RutaExpress {
                     if (placa == null) {
                         continue;
                     }
-                    String sede = pedirObligatorio("Código de sede de entrega:");
-                    if (sede != null) {
-                        mostrar("Entrega",
-                                sistema.registrarEntrega(placa, sede));
+                    String sede = pedirObligatorio("Código de sede de llegada:");
+                    if (sede == null) {
+                        continue;
+                    }
+                    mostrar("Llegada a sede", sistema.registrarEntrega(placa, sede));
+                    boolean seguir = true;
+                    while (seguir) {
+                        var vehiculo = sistema.getVehiculoManager().buscarPorPlaca(placa);
+                        if (vehiculo == null || !vehiculo.getSedeActual().equalsIgnoreCase(sede)
+                                || !vehiculo.tienePaquetesPara(sede)) {
+                            break;
+                        }
+                        String guia = pedirObligatorio("Guía del paquete a entregar:");
+                        if (guia == null) {
+                            break;
+                        }
+                        String resultado = menu("Resultado de entrega",
+                                new String[]{"Entregado", "No entregado", "Terminar parada"});
+                        if (resultado == null || resultado.equals("Terminar parada")) {
+                            break;
+                        }
+                        mostrar("Resultado de entrega", sistema.registrarResultadoEntrega(
+                                placa, sede, guia, resultado.equals("Entregado")));
                     }
                 }
                 case "Listar flota" -> {
@@ -434,7 +455,8 @@ public class RutaExpress {
                     }
                     String[] datos = {documento, guia, tipo, descripcion};
                     if (sistema.radicarPQR(datos)) {
-                        aviso("PQR radicada correctamente.");
+                        aviso("PQR radicada correctamente.\n"
+                                + sistema.getUltimoMensajePQR());
                     } else {
                         aviso(sistema.getUltimoError());
                     }

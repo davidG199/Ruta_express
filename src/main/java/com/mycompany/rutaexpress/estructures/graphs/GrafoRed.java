@@ -25,7 +25,7 @@ public class GrafoRed {
 
     public boolean agregarVia(String origen, String destino, Via via) {
         if (via == null || buscarSede(origen) == null || buscarSede(destino) == null
-                || buscarVia(origen, destino) != null) return false;
+                || buscarVia(origen, destino) != null || buscarVia(destino, origen) != null) return false;
         vias.AddLast(new Via(origen, destino, via.getTipoVia(), via.getEstado(),
                 via.getDistanciaKm(), via.getTiempoMin(), via.getPeajes()));
         vias.AddLast(new Via(destino, origen, via.getTipoVia(), via.getEstado(),
@@ -218,8 +218,7 @@ public class GrafoRed {
             resultado.append(sede).append("\n");
             for (Node nodoVia = vias.getHead(); nodoVia != null; nodoVia = nodoVia.getLink()) {
                 Via via = (Via) nodoVia.getData();
-                if (via.getOrigen().equalsIgnoreCase(sede.getCodigo())
-                        && sede.getCodigo().compareToIgnoreCase(via.getDestino()) < 0) {
+                if (via.getOrigen().equalsIgnoreCase(sede.getCodigo())) {
                     resultado.append("  -> ").append(via).append("\n");
                 }
             }
