@@ -3,7 +3,14 @@ package com.mycompany.rutaexpress.domain.vehicle;
 import com.mycompany.rutaexpress.domain.network.RedManager;
 import com.mycompany.rutaexpress.domain.network.Ruta;
 import com.mycompany.rutaexpress.domain.network.Sede;
+import com.mycompany.rutaexpress.domain.client.ClientManager;
+import com.mycompany.rutaexpress.domain.client.Cliente;
+import com.mycompany.rutaexpress.domain.parcel.EventoPaquete;
+import com.mycompany.rutaexpress.domain.parcel.Paquete;
 import com.mycompany.rutaexpress.estructures.lists.ListaDoble;
+import com.mycompany.rutaexpress.estructures.lists.Node;
+import com.mycompany.rutaexpress.estructures.queues.NodoCola;
+import com.mycompany.rutaexpress.estructures.stacks.NodoPila;
 import com.mycompany.rutaexpress.files.GestorArchivos;
 import com.mycompany.rutaexpress.files.GestorNotificaciones;
 
@@ -14,6 +21,7 @@ public class VehiculoManager {
     private final ListaDoble<Vehiculo> vehiculos;
     private final RedManager redManager;
     private final GestorNotificaciones notificador;
+    private ClientManager clientManager;
     private String ultimoError;
 
     public VehiculoManager() {
@@ -110,6 +118,14 @@ public class VehiculoManager {
         if (vehiculo == null) {
             return "No existe el vehículo " + placa + ".";
         }
+        if (!vehiculo.getEstado().equalsIgnoreCase("DISPONIBLE")) {
+            return "El vehículo " + placa + " debe estar DISPONIBLE para cargar paquetes.";
+        }
+        if (!vehiculo.getSedeBase().equalsIgnoreCase(vehiculo.getSedeActual())) {
+            return "El vehículo está en " + vehiculo.getSedeActual()
+                    + " y debe estar en su sede base " + vehiculo.getSedeBase()
+                    + " para cargar paquetes.";
+        }
         Sede bodega = redManager.buscarSede(vehiculo.getSedeBase());
         if (bodega == null) {
             return "La sede base " + vehiculo.getSedeBase() + " no existe.";
@@ -121,30 +137,69 @@ public class VehiculoManager {
         }
         return "Se cargaron " + cargados + " paquetes al vehículo " + placa + ".\n"
                 + "Peso en pila: " + String.format("%.1f", vehiculo.getPesoCarga())
-                + " kg de " + vehiculo.getCapacidadKg() + " kg.\n\n"
+                + " kg de " + vehiculo.getCapacidadKg() + " kg.\n"
+                + vehiculo.resumenRuta(redManager.getRed()) + "\n\n"
                 + vehiculo.recorrerCarga();
     }
 
     public String despachar(String placa) {
+        return despachar(placa, 15800);
+    }
+
+    public String despachar(String placa, double precioGalon) {
         Vehiculo vehiculo = buscarPorPlaca(placa);
         if (vehiculo == null) {
             return "No existe el vehículo " + placa + ".";
         }
         if (!vehiculo.despachar()) {
             return "El vehículo " + placa
-                    + " no está DISPONIBLE o no tiene paquetes cargados.";
+                    + " no está DISPONIBLE o no tiene paquetes/ruta cargados.";
         }
-        if (vehiculo.getConductor() != null) {
-            notificador.enviarCorreo(vehiculo.getConductor().getCorreo(),
-                    "Despacho de vehículo " + placa,
-                    "El vehículo " + placa + " salió de " + vehiculo.getSedeBase()
-                    + " con " + vehiculo.getCarga().getTamanio() + " paquetes.");
+        String ruta = vehiculo.resumenRuta(redManager.getRed());
+        StringBuilder cuerpo = new StringBuilder("Vehículo: ").append(placa)
+                .append("\nConductor: ")
+                .append(vehiculo.getConductor() == null ? "Sin asignar"
+                        : vehiculo.getConductor().getNombre())
+                .append("\nPaquetes cargados:\n").append(vehiculo.recorrerCarga())
+                .append("\n").append(ruta)
+                .append("\nCosto estimado de combustible: $")
+                .append(String.format("%.0f", vehiculo.calcularCostoCombustible(
+                        vehiculo.getKmRutaPlanificada(), precioGalon)));
+        double costoEstimado = vehiculo.calcularCostoCombustible(
+                vehiculo.getKmRutaPlanificada(), precioGalon);
+        boolean correoConductor = vehiculo.getConductor() == null
+                || notificador.enviarCorreo(vehiculo.getConductor().getCorreo(),
+                        "Hoja de ruta - vehículo " + placa, cuerpo.toString());
+        int notificados = 0;
+        int fallidos = 0;
+        NodoPila<Paquete> nodo = vehiculo.getCarga().getTope();
+        while (nodo != null) {
+            Paquete paquete = nodo.getValor();
+            if (notificador.enviarCorreo(paquete.getCorreoDestinatario(),
+                    "Paquete en camino " + paquete.getGuia(),
+                    "Tu paquete " + paquete.getGuia() + " salió de "
+                    + vehiculo.getSedeBase() + ".\n" + ruta)) {
+                notificados++;
+            } else {
+                fallidos++;
+            }
+            nodo = nodo.getSiguiente();
         }
         return "Vehículo " + placa + " despachado desde "
-                + vehiculo.getSedeBase() + ".\n\n" + vehiculo.recorrerCarga();
+                + vehiculo.getSedeBase() + ".\n" + ruta
+                + "\nCosto estimado de combustible: $"
+                + String.format("%.0f", costoEstimado)
+                + "\nAvisos a destinatarios enviados: " + notificados
+                + (fallidos > 0 ? " (fallidos: " + fallidos + ")" : "")
+                + (!correoConductor ? "\nFalló el envío de la hoja de ruta al conductor." : "")
+                + "\n\n" + vehiculo.recorrerCarga();
     }
 
     public String registrarEntrega(String placa, String codigoSede, double precioGalon) {
+        return registrarLlegada(placa, codigoSede, precioGalon);
+    }
+
+    public String registrarLlegada(String placa, String codigoSede, double precioGalon) {
         Vehiculo vehiculo = buscarPorPlaca(placa);
         if (vehiculo == null) {
             return "No existe el vehículo " + placa + ".";
@@ -156,30 +211,134 @@ public class VehiculoManager {
         if (!vehiculo.getEstado().equalsIgnoreCase("EN_RUTA")) {
             return "El vehículo " + placa + " no está EN_RUTA. Despáchelo primero.";
         }
-        if (!vehiculo.tienePaquetesPara(sede.getCodigo())) {
-            return "El vehículo " + placa + " no lleva paquetes para la sede "
-                    + sede.getCodigo() + ".";
+        if (vehiculo.tienePaquetesPara(vehiculo.getSedeActual())) {
+            return "Aún hay paquetes pendientes de resultado en la parada "
+                    + vehiculo.getSedeActual() + ". Registre cada entrega o devolución antes de avanzar.";
         }
-        Ruta ruta = redManager.calcularRutaMasCorta(vehiculo.getSedeBase(), sede.getCodigo());
+        if (!vehiculo.esProximaParada(sede.getCodigo())) {
+            return "La próxima parada de la ruta es " + vehiculo.getProximaParada()
+                    + ". No se puede registrar llegada a " + sede.getCodigo() + ".";
+        }
+        Ruta ruta = redManager.calcularRutaMasCorta(vehiculo.getSedeActual(), sede.getCodigo());
         if (ruta == null) {
-            return "No hay ruta habilitada desde " + vehiculo.getSedeBase()
+            return "No hay ruta habilitada desde " + vehiculo.getSedeActual()
                     + " hasta " + sede.getCodigo() + ".";
         }
         double km = ruta.getDistanciaTotal();
-        int entregados = vehiculo.registrarEntrega(sede);
-        vehiculo.setKmRecorridos(vehiculo.getKmRecorridos() + km);
+        int avance = vehiculo.registrarLlegada(sede, km);
         double combustible = vehiculo.calcularCostoCombustible(km, precioGalon);
+        return "Llegada registrada en " + sede.getCodigo() + ".\n"
+                + "Paquetes en esta parada:\n" + listarPaquetesParada(vehiculo, sede.getCodigo())
+                + "\nRecorrido: " + String.format("%.1f", km) + " km\n"
+                + "Costo de combustible del tramo: $" + String.format("%.0f", combustible)
+                + "\n" + (avance < vehiculo.getItinerario().length
+                        ? "Próxima parada: " + vehiculo.getProximaParada()
+                        : "Última parada de la ruta.");
+    }
 
+    public String registrarResultadoEntrega(String placa, String codigoSede,
+            String guia, boolean entregado) {
+        Vehiculo vehiculo = buscarPorPlaca(placa);
+        if (vehiculo == null) {
+            return "No existe el vehículo " + placa + ".";
+        }
+        Sede sede = redManager.buscarSede(codigoSede);
+        if (sede == null || !sede.getCodigo().equalsIgnoreCase(vehiculo.getSedeActual())) {
+            return "La sede indicada no coincide con la ubicación actual del vehículo.";
+        }
+        int posicion = vehiculo.posicionPaqueteEnCarga(guia);
+        if (posicion < 0) {
+            return "El paquete " + guia + " no está cargado en el vehículo.";
+        }
+        Paquete[] destino = vehiculo.paquetesParaParada(sede.getCodigo());
+        boolean corresponde = false;
+        for (Paquete paquete : destino) {
+            if (paquete.getGuia().equalsIgnoreCase(guia)) {
+                corresponde = true;
+                break;
+            }
+        }
+        if (!corresponde) {
+            return "El paquete " + guia + " no corresponde a esta parada.";
+        }
+        Paquete paquete = vehiculo.retirarPaquete(guia);
+        if (paquete == null) {
+            return "No fue posible retirar el paquete " + guia + " de la pila.";
+        }
+        String responsable = vehiculo.getConductor() == null ? "Sistema"
+                : vehiculo.getConductor().getNombre();
+        String resultado;
+        if (entregado) {
+            paquete.setEstado("ENTREGADO");
+            paquete.agregarEvento(sede.getCodigo(), "Entregado al destinatario", responsable);
+            int erroresCorreo = notificarEntrega(paquete, "Paquete entregado " + guia,
+                    "El paquete " + guia + " fue entregado en " + sede.getCodigo() + ".");
+            resultado = "Paquete " + guia + " marcado como ENTREGADO."
+                    + prefijoReordenamiento(posicion)
+                    + (erroresCorreo > 0 ? " Falló el envío de " + erroresCorreo
+                            + " notificación(es); revise fallos.log." : "");
+        } else {
+            paquete.setEstado("DEVUELTO");
+            paquete.agregarEvento(sede.getCodigo(), "Entrega fallida; paquete devuelto a origen",
+                    responsable);
+            Sede origen = redManager.buscarSede(paquete.getSedeOrigen());
+            if (origen != null && origen.capacidadDisponible() >= paquete.calcularPesoFacturable()) {
+                origen.encolarPaquete(paquete);
+                resultado = "Paquete " + guia + " marcado como DEVUELTO y reencolado en "
+                        + origen.getCodigo() + "." + prefijoReordenamiento(posicion);
+            } else {
+                boolean alertaEnviada = origen != null && notificador.notificarSede(
+                        origen.getCorreoCoordinador(),
+                        "Devolución sin capacidad de bodega - " + guia,
+                        "El paquete " + guia + " no se pudo reencolar en "
+                        + origen.getCodigo() + " por falta de capacidad.");
+                resultado = "Paquete " + guia + " marcado como DEVUELTO, pero no se pudo "
+                        + "reencolar por falta de capacidad. "
+                        + (alertaEnviada ? "Se alertó al coordinador."
+                                : "Falló el aviso al coordinador; revise fallos.log.")
+                        + prefijoReordenamiento(posicion);
+            }
+        }
+        if (vehiculo.getCarga().estaVacia()) {
+            vehiculo.limpiarRuta();
+            vehiculo.setEstado("DISPONIBLE");
+        }
+        return resultado;
+    }
+
+    private String listarPaquetesParada(Vehiculo vehiculo, String codigoSede) {
+        Paquete[] paquetes = vehiculo.paquetesParaParada(codigoSede);
+        if (paquetes.length == 0) {
+            return "No hay paquetes para esta sede.";
+        }
         StringBuilder resultado = new StringBuilder();
-        resultado.append("Entrega registrada en ").append(sede.getCodigo()).append(".\n");
-        resultado.append("Paquetes entregados: ").append(entregados).append("\n");
-        resultado.append("Paquetes restantes en el vehículo: ")
-                .append(vehiculo.getCarga().getTamanio()).append("\n");
-        resultado.append("Recorrido: ").append(String.format("%.1f", km)).append(" km\n");
-        resultado.append("Costo de combustible: $")
-                .append(String.format("%.0f", combustible)).append("\n");
-        resultado.append("Estado del vehículo: ").append(vehiculo.getEstado()).append("\n");
+        for (Paquete paquete : paquetes) {
+            resultado.append("- Guía ").append(paquete.getGuia())
+                    .append(" | Destinatario: ").append(paquete.getNombreDestinatario())
+                    .append(" | Dirección: ").append(paquete.getDireccionEntrega())
+                    .append(" | Posición pila: ")
+                    .append(vehiculo.posicionPaqueteEnCarga(paquete.getGuia()) + 1)
+                    .append("\n");
+        }
         return resultado.toString();
+    }
+
+    private String prefijoReordenamiento(int posicion) {
+        return posicion == 0 ? "" : " Se bajaron temporalmente " + posicion
+                + " paquete(s) que estaban encima y se volvieron a subir en el mismo orden.";
+    }
+
+    private int notificarEntrega(Paquete paquete, String asunto, String cuerpo) {
+        int fallidos = 0;
+        if (!notificador.enviarCorreo(paquete.getCorreoDestinatario(), asunto, cuerpo)) {
+            fallidos++;
+        }
+        Cliente remitente = clientManager == null ? null
+                : clientManager.buscarPorDocumento(paquete.getDocumentoRemitente());
+        if (remitente != null && !notificador.enviarCorreo(remitente.getCorreo(), asunto, cuerpo)) {
+            fallidos++;
+        }
+        return fallidos;
     }
 
     public String recorrerFlota(String filtro) {
@@ -257,6 +416,10 @@ public class VehiculoManager {
         });
         return resultado.length() == 0
                 ? "No hay vehículos en estado " + estado + "." : resultado.toString();
+    }
+
+    public void setClientManager(ClientManager clientManager) {
+        this.clientManager = clientManager;
     }
 
     public ListaDoble<Vehiculo> getVehiculos() { return vehiculos; }

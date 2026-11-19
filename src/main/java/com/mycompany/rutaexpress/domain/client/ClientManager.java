@@ -106,7 +106,6 @@ public class ClientManager {
             }
             ultimoError = "No se pudo enviar el correo de bienvenida a "
                     + destino + ".";
-            notificador.registrarFallo(destino, ultimoError);
             return "No se pudo enviar el correo de bienvenida a " + destino + ".";
         }
         return "No se pudo enviar el correo de bienvenida a " + destino + ".";

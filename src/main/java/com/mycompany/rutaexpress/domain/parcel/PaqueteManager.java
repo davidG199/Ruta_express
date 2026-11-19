@@ -152,13 +152,55 @@ public class PaqueteManager {
                     + String.format("%.1f", origen.calcularOcupacion()) + "%.");
         }
 
-        if (notificador != null) {
-            notificador.enviarCorreo(paquete.getCorreoDestinatario(),
-                    "Paquete " + guia + " admitido",
-                    "Su paquete fue admitido en " + origen.getCodigo()
-                    + " y será enviado a " + destino.getCodigo() + ".");
+        if (notificador != null && !notificador.enviarCorreo(remitente.getCorreo(),
+                "Admisión del paquete " + guia,
+                correoAdmision(paquete, remitente, ruta))) {
+            ultimoError = "Paquete admitido correctamente, pero no se pudo enviar "
+                    + "el correo de confirmación al remitente. Revise fallos.log.";
+            paquete.agregarEvento(origen.getCodigo(),
+                    "No se pudo enviar el correo de confirmación al remitente",
+                    "Sistema");
         }
         return paquete;
+    }
+
+    private String correoAdmision(Paquete paquete, Cliente remitente, Ruta ruta) {
+        String servicio = paquete.getTipoServicio() == null ? "ESTANDAR"
+                : paquete.getTipoServicio().trim().toUpperCase().replace(" ", "_");
+        double tarifaBase = switch (servicio) {
+            case "EXPRESS" -> 15000;
+            case "CONTRA_ENTREGA" -> 10000;
+            default -> 8000;
+        };
+        double cargoPeso = 1500 * paquete.calcularPesoFacturable();
+        double cargoDistancia = 120 * ruta.getDistanciaTotal();
+        double cargoValor = 0.01 * paquete.getValorDeclarado();
+        double cargoContraEntrega = "CONTRA_ENTREGA".equals(servicio)
+                ? 0.02 * paquete.getValorDeclarado() : 0;
+        double subtotal = tarifaBase + cargoPeso + cargoDistancia
+                + cargoValor + cargoContraEntrega;
+        double recargoFragil = paquete.isFragil() ? subtotal * 0.10 : 0;
+
+        return "Hola " + remitente.getNombre() + ", tu paquete fue admitido.\n"
+                + "Guía: " + paquete.getGuia() + "\n"
+                + "Remitente: " + remitente.getNombre() + " ("
+                + remitente.getDocumento() + ")\n"
+                + "Ruta: " + ruta.toString() + "\n"
+                + "Desglose del costo de envío:\n"
+                + "- Tarifa base " + servicio + ": $"
+                + String.format("%.0f", tarifaBase) + "\n"
+                + "- Peso facturable (" + String.format("%.2f",
+                        paquete.calcularPesoFacturable()) + " kg): $"
+                + String.format("%.0f", cargoPeso) + "\n"
+                + "- Distancia (" + String.format("%.1f", ruta.getDistanciaTotal())
+                + " km): $" + String.format("%.0f", cargoDistancia) + "\n"
+                + "- Valor declarado (1%): $" + String.format("%.0f", cargoValor) + "\n"
+                + (cargoContraEntrega > 0 ? "- Manejo contra entrega: $"
+                        + String.format("%.0f", cargoContraEntrega) + "\n" : "")
+                + (paquete.isFragil() ? "- Recargo por frágil (10%): $"
+                        + String.format("%.0f", recargoFragil) + "\n" : "")
+                + "Total: $" + String.format("%.0f", paquete.getCostoEnvio()) + "\n"
+                + "Fecha máxima de entrega: " + paquete.getFechaMaximaEntrega();
     }
 
     public int cargarIniciales(GestorArchivos archivos) {
@@ -271,6 +313,59 @@ public class PaqueteManager {
         final double[] total = {0};
         recorrerPorRemitente(documento, paquete -> total[0] += paquete.getCostoEnvio());
         return total[0];
+    }
+
+    /**
+     * Notificación coordinable para el flujo de despacho de flota.
+     * Paquete.agregarEvento sigue siendo la API existente para registrar rastreo.
+     */
+    public String notificarDespacho(Paquete paquete) {
+        if (paquete == null) {
+            return "No se pudo notificar el despacho: paquete inválido.";
+        }
+        if (notificador == null) {
+            return "Paquete " + paquete.getGuia()
+                    + " despachado; no hay servicio de correo configurado.";
+        }
+        boolean enviado = notificador.enviarCorreo(paquete.getCorreoDestinatario(),
+                "Paquete " + paquete.getGuia() + " en camino",
+                "Tu paquete " + paquete.getGuia() + " fue despachado y está en camino "
+                + "a " + paquete.getSedeDestino() + ".");
+        return enviado ? "Aviso de despacho enviado al destinatario."
+                : "Despacho realizado, pero falló el aviso al destinatario; revise fallos.log.";
+    }
+
+    /**
+     * Notificación coordinable para el flujo de entrega de flota.
+     * El resultado informa fallos sin revertir el estado de entrega.
+     */
+    public String notificarEntrega(Paquete paquete) {
+        if (paquete == null) {
+            return "No se pudo notificar la entrega: paquete inválido.";
+        }
+        if (notificador == null) {
+            return "Paquete " + paquete.getGuia()
+                    + " entregado; no hay servicio de correo configurado.";
+        }
+        Cliente remitente = clientManager == null ? null
+                : clientManager.buscarPorDocumento(paquete.getDocumentoRemitente());
+        boolean correoRemitente = remitente != null
+                && notificador.enviarCorreo(remitente.getCorreo(),
+                        "Paquete " + paquete.getGuia() + " entregado",
+                        "El paquete " + paquete.getGuia() + " fue entregado en "
+                        + paquete.getSedeDestino() + ".");
+        boolean correoDestinatario = notificador.enviarCorreo(
+                paquete.getCorreoDestinatario(),
+                "Confirmación de entrega " + paquete.getGuia(),
+                "El paquete " + paquete.getGuia() + " fue entregado correctamente.");
+        if (remitente == null || !correoRemitente || !correoDestinatario) {
+            return "Entrega registrada, pero una o más notificaciones fallaron; revise fallos.log.";
+        }
+        return "Confirmaciones de entrega enviadas al remitente y destinatario.";
+    }
+
+    public Cliente buscarClienteRemitente(String documento) {
+        return clientManager == null ? null : clientManager.buscarPorDocumento(documento);
     }
 
     public int cantidad() { return paquetes.cantidad(); }

@@ -42,6 +42,7 @@ public class SistemaRutaExpress {
         paqueteManager = new PaqueteManager(clientManager, redManager, notificador);
         clientManager.setPaqueteManager(paqueteManager);
         vehiculoManager = new VehiculoManager(archivos, redManager, notificador);
+        vehiculoManager.setClientManager(clientManager);
         pqrManager = new PqrManager(clientManager, paqueteManager, notificador);
         generadorInformes = new GeneradorInformes(redManager, paqueteManager,
                 vehiculoManager, pqrManager, configuracion, archivos);
@@ -146,11 +147,16 @@ public class SistemaRutaExpress {
     }
 
     public String despacharVehiculo(String placa) {
-        return vehiculoManager.despachar(placa);
+        return vehiculoManager.despachar(placa, getPrecioGalon());
     }
 
     public String registrarEntrega(String placa, String codigoSede) {
-        return vehiculoManager.registrarEntrega(placa, codigoSede, getPrecioGalon());
+        return vehiculoManager.registrarLlegada(placa, codigoSede, getPrecioGalon());
+    }
+
+    public String registrarResultadoEntrega(String placa, String codigoSede,
+            String guia, boolean entregado) {
+        return vehiculoManager.registrarResultadoEntrega(placa, codigoSede, guia, entregado);
     }
 
     public String recorrerFlota(String filtro) {
@@ -197,6 +203,10 @@ public class SistemaRutaExpress {
         boolean radicada = pqrManager.radicar(datos);
         ultimoError = pqrManager.getUltimoError();
         return radicada;
+    }
+
+    public String getUltimoMensajePQR() {
+        return pqrManager.getUltimoMensajeOperacion();
     }
 
     public String atenderPQR(String funcionario, String nota, boolean cerrar) {

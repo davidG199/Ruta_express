@@ -68,9 +68,16 @@ public class GestorNotificaciones {
 
     public boolean enviarCorreo(String destino, String asunto, String cuerpo) {
         if (!configuracionCargada) {
-            cargarConfiguracion();
+            try {
+                cargarConfiguracion();
+            } catch (RuntimeException e) {
+                registrarFallo(destino, "No se pudo cargar la configuración SMTP: "
+                        + e.getMessage());
+                configuracionCargada = false;
+                return false;
+            }
         }
-        if (correoEmisor.isEmpty() || claveApp.isEmpty()) {
+        if (correoEmisor.isEmpty() || (autenticacionSmtp && claveApp.isEmpty())) {
             registrarFallo(destino, "Cuenta de correo no configurada en " + rutaConfig);
             return false;
         }
@@ -102,7 +109,7 @@ public class GestorNotificaciones {
             mensaje.setText(cuerpo == null ? "" : cuerpo, "UTF-8");
             Transport.send(mensaje);
             return true;
-        } catch (MessagingException e) {
+        } catch (Exception e) {
             registrarFallo(destino, "No se pudo enviar el correo: " + e.getMessage());
             return false;
         }
@@ -136,13 +143,11 @@ public class GestorNotificaciones {
      * @param asunto  El asunto del mensaje.
      * @param cuerpo  El cuerpo del mensaje.
      */
-    public void notificarSede(String destino, String asunto, String cuerpo) {
+    public boolean notificarSede(String destino, String asunto, String cuerpo) {
         if (destino == null || destino.trim().isEmpty()) {
             destino = correoCoordinador;
         }
-        if (!enviarCorreo(destino, asunto, cuerpo)) {
-            registrarFallo(destino, "No se pudo enviar la notificación: " + asunto);
-        }
+        return enviarCorreo(destino, asunto, cuerpo);
     }
 
     public void registrarFallo(String destino, String error) {

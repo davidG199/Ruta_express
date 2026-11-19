@@ -2,6 +2,7 @@ package com.mycompany.rutaexpress.domain.pqr;
 
 import com.mycompany.rutaexpress.domain.parcel.PaqueteManager;
 import com.mycompany.rutaexpress.domain.client.ClientManager;
+import com.mycompany.rutaexpress.domain.client.Cliente;
 import com.mycompany.rutaexpress.estructures.queues.Cola;
 import com.mycompany.rutaexpress.estructures.queues.NodoCola;
 import com.mycompany.rutaexpress.files.GestorArchivos;
@@ -20,6 +21,7 @@ public class PqrManager {
     private final GestorNotificaciones notificador;
     private final Random random;
     private String ultimoError;
+    private String ultimoMensajeOperacion;
 
     public PqrManager() {
         this(null, null, null);
@@ -33,6 +35,7 @@ public class PqrManager {
         this.notificador = notificador;
         this.random = new Random();
         this.ultimoError = "";
+        this.ultimoMensajeOperacion = "";
     }
 
     public int cargarDesdeArchivo(GestorArchivos archivos) {
@@ -68,6 +71,7 @@ public class PqrManager {
 
     public boolean radicar(Pqr pqr) {
         ultimoError = "";
+        ultimoMensajeOperacion = "";
         if (pqr == null) {
             ultimoError = "La PQR es obligatoria.";
             return false;
@@ -80,12 +84,31 @@ public class PqrManager {
             ultimoError = "Ya existe la PQR " + pqr.getRadicado() + ".";
             return false;
         }
+        if (clientManager != null
+                && clientManager.buscarPorDocumento(pqr.getDocumentoCliente()) == null) {
+            ultimoError = "No existe el cliente " + pqr.getDocumentoCliente() + ".";
+            return false;
+        }
         pqrs.encolar(pqr);
+        Cliente cliente = clientManager == null ? null
+                : clientManager.buscarPorDocumento(pqr.getDocumentoCliente());
+        if (cliente != null && notificador != null) {
+            boolean enviada = notificador.enviarCorreo(cliente.getCorreo(),
+                    "Confirmación de PQR " + pqr.getRadicado(),
+                    "Hola " + cliente.getNombre() + ", recibimos tu PQR.\n\n"
+                    + pqr.toString());
+            ultimoMensajeOperacion = enviada
+                    ? "PQR radicada y confirmación enviada al cliente."
+                    : "PQR radicada, pero falló el correo de confirmación; revise fallos.log.";
+        } else {
+            ultimoMensajeOperacion = "PQR radicada sin correo de confirmación disponible.";
+        }
         return true;
     }
 
     public boolean radicar(String[] datos) {
         ultimoError = "";
+        ultimoMensajeOperacion = "";
         if (datos == null || datos.length < 4) {
             ultimoError = "Faltan datos de la PQR.";
             return false;
@@ -112,12 +135,28 @@ public class PqrManager {
                 datos[3] == null ? "" : datos[3].trim(), LocalDateTime.now());
         pqr.agregarSeguimiento("Cliente", "Radicación de la PQR");
         pqrs.encolar(pqr);
+        Cliente cliente = clientManager.buscarPorDocumento(pqr.getDocumentoCliente());
+        StringBuilder resultadoCorreo = new StringBuilder();
         if (notificador != null) {
-            notificador.notificarSede(notificador.getCorreoCoordinador(),
-                    "Nueva PQR " + radicado,
+            boolean confirmacion = notificador.enviarCorreo(cliente.getCorreo(),
+                    "Confirmación de PQR " + radicado,
+                    "Hola " + cliente.getNombre() + ", recibimos tu PQR.\n\n"
+                    + pqr.toString());
+            resultadoCorreo.append(confirmacion
+                    ? "Confirmación enviada al cliente."
+                    : "La PQR fue radicada, pero falló el correo de confirmación; "
+                            + "revise fallos.log.");
+            boolean avisoCoordinador = notificador.notificarSede(
+                    notificador.getCorreoCoordinador(), "Nueva PQR " + radicado,
                     "Cliente " + pqr.getDocumentoCliente() + " radicó " + pqr.getTipo()
                     + ": " + pqr.getDescripcion());
+            resultadoCorreo.append(" ").append(avisoCoordinador
+                    ? "Coordinador notificado."
+                    : "Falló también el aviso al coordinador; revise fallos.log.");
+        } else {
+            resultadoCorreo.append("PQR radicada; no hay servicio de correo configurado.");
         }
+        ultimoMensajeOperacion = resultadoCorreo.toString();
         return true;
     }
 
@@ -130,18 +169,36 @@ public class PqrManager {
     }
 
     public String atender(String funcionario, String nota, boolean cerrar) {
+        ultimoMensajeOperacion = "";
         Pqr pqr = pqrs.desencolar();
         if (pqr == null) {
             return null;
         }
         pqr.agregarSeguimiento(funcionario, nota);
+        String estado;
         if (cerrar) {
             pqr.cerrar("");
+            estado = "CERRADA";
+            Cliente cliente = clientManager == null ? null
+                    : clientManager.buscarPorDocumento(pqr.getDocumentoCliente());
+            if (cliente != null && notificador != null) {
+                boolean enviada = notificador.enviarCorreo(cliente.getCorreo(),
+                        "Respuesta a PQR " + pqr.getRadicado(),
+                        "Hola " + cliente.getNombre() + ", tu PQR ha sido cerrada.\n"
+                        + "Respuesta: " + (nota == null ? "" : nota.trim())
+                        + "\n\nHistorial completo de atención:\n" + pqr.toString());
+                ultimoMensajeOperacion = enviada
+                        ? "Respuesta e historial completo enviados al cliente."
+                        : "PQR cerrada, pero falló el correo al cliente; revise fallos.log.";
+            } else {
+                ultimoMensajeOperacion = "PQR cerrada sin correo del cliente disponible.";
+            }
         } else {
             pqrs.encolar(pqr);
+            estado = "ABIERTA (reenviada al final de la cola)";
         }
-        String estado = cerrar ? "CERRADA" : "ABIERTA (reenviada al final de la cola)";
-        return "PQR " + pqr.getRadicado() + " -> " + estado + "\n\n" + pqr;
+        return "PQR " + pqr.getRadicado() + " -> " + estado + "\n\n" + pqr
+                + (ultimoMensajeOperacion.isEmpty() ? "" : "\n" + ultimoMensajeOperacion);
     }
 
     public Pqr verFrente() { return pqrs.verFrente(); }
@@ -211,4 +268,5 @@ public class PqrManager {
     public Cola<Pqr> getPqrs() { return pqrs; }
     public int cantidad() { return pqrs.getTamanio(); }
     public String getUltimoError() { return ultimoError; }
+    public String getUltimoMensajeOperacion() { return ultimoMensajeOperacion; }
 }
