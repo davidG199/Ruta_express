@@ -20,7 +20,8 @@ La aplicación está separada por responsabilidades:
 ## Requisitos
 
 - JDK 21
-- Maven 3.9+ (opcional, también se puede compilar con `javac`)
+- Maven 3.9+ (recomendado para empaquetar el JAR ejecutable con Jakarta Mail)
+- Alternativa sin Maven: JDK 21 y Jakarta Mail 2.0.5 descargado en `~/.m2/repository`
 
 ## Compilar y ejecutar
 
@@ -31,15 +32,7 @@ mvn clean package
 java -jar target/RutaExpress-1.0-SNAPSHOT.jar
 ```
 
-Con `javac`:
-
-```bash
-mkdir -p target/classes
-javac -encoding UTF-8 -d target/classes $(find src/main/java -name "*.java")
-java -cp target/classes com.mycompany.rutaexpress.main.RutaExpress
-```
-
-También puede ejecutarse con `./run.sh` en Linux.
+Sin Maven, `./run.sh` compila con Java 21 y usa Jakarta Mail, Activation API y Angus Activation descargados en `~/.m2/repository`. No requiere enviar mensajes reales durante la compilación.
 
 Los archivos de datos (`config.txt`, `red.txt`, `clientes.txt`, `paquetes.txt`,
 `vehiculos.txt`, `pqr.txt`) deben quedar en la carpeta desde la que se ejecuta
@@ -96,17 +89,25 @@ sede y la pila del vehículo apuntan a la **misma instancia**; no se copian obje
 
 ## Correo y notificaciones
 
-El envío de correo es **simulado** para el proyecto académico: se escribe en
-`notificaciones.log`. Si la configuración falta o el destino es inválido, se
-registra en `fallos.log` y la operación continúa. En `config.txt` se incluyen
-credenciales de demostración, no reales.
+El envío de correo se realiza por SMTP con Jakarta Mail usando los datos de
+`config.txt`. Si la configuración falta o el destino es inválido, se registra el
+fallo en `fallos.log` y la operación continúa. La alternativa de compilación local
+no envía correos; no se deben probar destinatarios reales sin autorización.
 
 ## Archivos de datos
 
 ### `red.txt`
+La red inicial usa dos bloques separados por la línea `VIAS`. Las sedes contienen
+código, nombre, municipio, dirección, tipo, capacidad en kg, teléfono y correo;
+las vías contienen origen, destino, distancia en km, tiempo en minutos, peajes,
+tipo de vía y estado. También se admite el formato etiquetado legado `SEDE;...`
+/ `VIA;...`.
+
 ```text
-SEDE;codigo;nombre;municipio;direccion;tipo;telefono;correoCoordinador;capacidadBodegaKg
-VIA;origen;destino;tipoVia;estado;distanciaKm;tiempoMin;peajes
+SEDES
+codigo;nombre;municipio;direccion;tipo;capacidadKg;telefono;correoCoordinador
+VIAS
+origen;destino;distanciaKm;tiempoMin;peajes;tipoVia;estado
 ```
 
 ### `clientes.txt`

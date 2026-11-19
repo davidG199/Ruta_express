@@ -1,18 +1,32 @@
-# SEDE;codigo;nombre;municipio;direccion;tipo;telefono;correoCoordinador;capacidadBodegaKg
-SEDE;MED;Sede Medellín;Medellín;Calle 50 # 50-50;Principal;6041234567;med@rutaexpress.com;8000
-SEDE;BEL;Sede Bello;Bello;Carrera 50 # 20-10;Centro;6042345678;bello@rutaexpress.com;4000
-SEDE;ENV;Sede Envigado;Envigado;Calle 40 Sur # 30-20;Centro;6043456789;envigado@rutaexpress.com;3500
-SEDE;ITA;Sede Itagüí;Itagüí;Carrera 52 # 40-30;Centro;6044567890;itagui@rutaexpress.com;3000
-SEDE;RNG;Sede Rionegro;Rionegro;Calle 10 # 20-15;Oriente;6045678901;rionegro@rutaexpress.com;5000
-SEDE;APO;Sede Apartadó;Apartadó;Carrera 100 # 10-05;Urabá;6046789012;apartado@rutaexpress.com;2500
-SEDE;TUR;Sede Turbo;Turbo;Calle 5 # 10-10;Urabá;6047890123;turbo@rutaexpress.com;2000
-# VIA;origen;destino;tipoVia;estado;distanciaKm;tiempoMin;peajes
-VIA;MED;BEL;Urbana;HABILITADA;10;20;0
-VIA;MED;ENV;Urbana;HABILITADA;12;25;0
-VIA;MED;ITA;Urbana;HABILITADA;11;22;0
-VIA;BEL;ITA;Urbana;HABILITADA;9;18;0
-VIA;ENV;ITA;Urbana;HABILITADA;8;16;0
-VIA;MED;RNG;Autopista;HABILITADA;38;55;12000
-VIA;RNG;APO;Autopista;HABILITADA;310;360;45000
-VIA;APO;TUR;Carretera;HABILITADA;20;35;3000
-VIA;MED;APO;Autopista;CERRADA;340;400;60000
+SEDES
+MED;Sede Medellín;Medellín;Calle 50 # 50-50;Principal;8000;6041234567;med@rutaexpress.com
+ENV;Sede Envigado;Envigado;Calle 40 Sur # 30-20;Satélite;3500;6043456789;envigado@rutaexpress.com
+BEL;Sede Bello;Bello;Carrera 50 # 20-10;Satélite;4000;6042345678;bello@rutaexpress.com
+ITA;Sede Itagüí;Itagüí;Carrera 52 # 40-30;Satélite;3000;6044567890;itagui@rutaexpress.com
+RNG;Sede Rionegro;Rionegro;Calle 10 # 20-15;Satélite;5000;6045678901;rionegro@rutaexpress.com
+CEC;Sede La Ceja;La Ceja;Calle 20 # 20-20;Satélite;2500;6041111111;laceja@rutaexpress.com
+MAR;Sede Marinilla;Marinilla;Carrera 30 # 30-30;Satélite;2000;6042222222;marinilla@rutaexpress.com
+SFA;Sede Santa Fe de Antioquia;Santa Fe de Antioquia;Calle 10 # 10-10;Satélite;2500;6043333333;santafe@rutaexpress.com
+YAR;Sede Yarumal;Yarumal;Carrera 20 # 20-20;Satélite;1800;6044444444;yarumal@rutaexpress.com
+CAU;Sede Caucasia;Caucasia;Calle 30 # 30-30;Satélite;2200;6045555555;caucasia@rutaexpress.com
+APO;Sede Apartadó;Apartadó;Carrera 100 # 10-05;Satélite;2500;6046789012;apartado@rutaexpress.com
+TUR;Sede Turbo;Turbo;Calle 5 # 10-10;Satélite;2000;6047890123;turbo@rutaexpress.com
+VIAS
+MED;ENV;18;30;0;Pavimentada;HABILITADA
+MED;BEL;12;25;0;Pavimentada;HABILITADA
+MED;ITA;14;28;0;Pavimentada;HABILITADA
+MED;RNG;42;60;12000;Pavimentada;HABILITADA
+ENV;ITA;10;18;0;Pavimentada;HABILITADA
+BEL;ITA;16;30;0;Pavimentada;HABILITADA
+RNG;CEC;18;25;0;Pavimentada;HABILITADA
+RNG;MAR;22;30;0;Pavimentada;HABILITADA
+CEC;MAR;14;22;0;Pavimentada;HABILITADA
+MED;SFA;58;75;15000;Pavimentada;HABILITADA
+MED;YAR;125;150;22000;Pavimentada;HABILITADA
+YAR;CAU;115;140;18000;Pavimentada;HABILITADA
+CAU;APO;220;300;35000;Pavimentada;HABILITADA
+APO;TUR;25;40;3000;Pavimentada;HABILITADA
+RNG;CAU;260;330;42000;Pavimentada;HABILITADA
+ITA;SFA;65;85;16000;Pavimentada;HABILITADA
+BEL;YAR;118;145;20000;Pavimentada;HABILITADA
+APO;MED;345;420;60000;Pavimentada;CERRADA
